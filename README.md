@@ -41,12 +41,19 @@ Install dependencies with `pip install -r requirements.txt`.
 
 ### Train
 - Train reference model
+
 Utilize the scripts `./scripts/train_safety_model.sh` to train the safety-degrading model.
+
 Utilize the scripts `./scripts/train_utility_model.sh` to train the utility-oriented model.
+
 - Token selection
+
 Utilize the scripts `./scripts/safety_model_calculate_loss.sh` and `./scripts/utlity_model_calculate_loss.sh` to obtain the loss files.
+
 Utilize the scripts `./scripts/generate_token_mask.sh` to generate the token masking matrix.
+
 - Token-level selective training
+
 Utilize the scripts `./scripts/selective_finetuning.sh` to perform selective fine-tuning.
 
 ### Evaluation
