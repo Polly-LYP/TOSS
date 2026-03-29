@@ -59,11 +59,27 @@ Utilize the scripts `./scripts/selective_finetuning.sh` to perform selective fin
 ### Evaluation
 Our evaluation method follows [SEAL](https://github.com/hanshen95/SEAL)
 
+### models
+We also provide the models trained with our method on Hugging Face.
+| Model | Link |
+| --- | --- |
+| safety-degrading model |  |
+| utility-oriented model |  |
+| TOSS | |
+
 ## 🤝 Acknowledgments
 We would like to appreciate the following fantastic open-source works contributing to the implementation.
 - [SEAL](https://github.com/hanshen95/SEAL)
 - [TokenCleaning](https://github.com/UCSC-REAL/TokenCleaning)
 
 ## ✏️ Citation
+If you find TOSS useful, please cite our paper:
 
-
+```
+@article{li2026token,
+  title={Token-level Data Selection for Safe LLM Fine-tuning},
+  author={Li, Yanping and Liu, Zhening and Li, Zijian and Lin, Zehong and Zhang, Jun},
+  journal={arXiv preprint arXiv:2603.01185},
+  year={2026}
+}
+```
