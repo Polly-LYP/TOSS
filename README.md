@@ -63,9 +63,9 @@ Our evaluation method follows [SEAL](https://github.com/hanshen95/SEAL)
 We also provide the models trained with our method on Hugging Face.
 | Model | Link |
 | --- | --- |
-| safety-degrading model |  |
-| utility-oriented model |  |
-| TOSS | |
+| safety-degrading model | https://huggingface.co/Polly1231/safety_degrading_model |
+| utility-oriented model | https://huggingface.co/Polly1231/utility_oriented_model |
+| TOSS | https://huggingface.co/Polly1231/TOSS |
 
 ## 🤝 Acknowledgments
 We would like to appreciate the following fantastic open-source works contributing to the implementation.
