@@ -1,0 +1,20 @@
+Collecting more_itertools
+  Using cached more_itertools-10.7.0-py3-none-any.whl.metadata (37 kB)
+Collecting pybind11
+  Using cached pybind11-2.13.6-py3-none-any.whl.metadata (9.5 kB)
+Collecting colorama
+  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+Collecting lxml
+  Downloading lxml-6.0.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Collecting scipy
+  Using cached scipy-1.15.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
+Requirement already satisfied: numpy<2.5,>=1.23.5 in /home/ylitx/anaconda3/envs/Dual-goal-selection/lib/python3.10/site-packages (from scipy) (1.26.4)
+Using cached more_itertools-10.7.0-py3-none-any.whl (65 kB)
+Using cached pybind11-2.13.6-py3-none-any.whl (243 kB)
+Using cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Downloading lxml-6.0.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (5.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.3/5.3 MB 39.9 MB/s eta 0:00:00
+Using cached scipy-1.15.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (37.7 MB)
+Installing collected packages: scipy, pybind11, more_itertools, lxml, colorama
+
+Successfully installed colorama-0.4.6 lxml-6.0.0 more_itertools-10.7.0 pybind11-2.13.6 scipy-1.15.3

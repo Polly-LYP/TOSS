@@ -23,12 +23,13 @@ Fine-tuning large language models (LLMs) on custom datasets has become a standar
 ## :sparkles:Performance Illustration
 We illustrate the safety and utility performance of our method. For more details, please check the official paper.
 <p align="center">
-  <img src="assets/RD.png" alt="R-D performance on InStereo2K dataset">
+  <img src="assets/performance_1.png" alt="performance on safety and utility benchmarks">
 </p>
+<!-- ![performance on safety and utility benchmarks](assets/performance_1.png) -->
 <p align="center">
-  <img src="assets/vis.png" alt="Compression results visualization">
+  <img src="assets/performance_2.png" alt="Visualization of models' output">
 </p>
-<!-- ![Compression results visualization](assets/vis.png) -->
+<!-- ![Visualization of models' output](assets/performance_2.png) -->
 
 ## ✨ Quick Start
 
@@ -38,7 +39,10 @@ After cloning the repository, follow these steps to train and run inference.
 
 Install dependencies with `pip install -r requirements.txt`.
 
-### Training
+### Method
+- Train reference model
+- Token selection
+- Token-level selective training
 
 ### Evaluation
 
