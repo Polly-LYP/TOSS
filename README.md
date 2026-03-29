@@ -3,7 +3,7 @@ This is the official PyTorch implementation of our **ICLR 26** paper:
 
 **Token-level Data Selection for Safe LLM Fine-tuning**
 
-[Yanping Li], [Zhening Liu](https://www.liuzhening.top), [Zijian Li](https://zli999.github.io/zijianli.github.io/), [Zehong Lin](https://zhlinup.github.io/), [Jun Zhang](https://eejzhang.people.ust.hk/)
+[Yanping Li](https://openreview.net/profile?id=%7EYanping_Li4), [Zhening Liu](https://www.liuzhening.top), [Zijian Li](https://zli999.github.io/zijianli.github.io/), [Zehong Lin](https://zhlinup.github.io/), [Jun Zhang](https://eejzhang.people.ust.hk/)
 
 [[ArXiv Preprint](https://arxiv.org/abs/2603.01185)]
 
@@ -39,15 +39,23 @@ After cloning the repository, follow these steps to train and run inference.
 
 Install dependencies with `pip install -r requirements.txt`.
 
-### Method
+### Train
 - Train reference model
+Utilize the scripts `./scripts/train_safety_model.sh` to train the safety-degrading model.
+Utilize the scripts `./scripts/train_utility_model.sh` to train the utility-oriented model.
 - Token selection
+Utilize the scripts `./scripts/safety_model_calculate_loss.sh` and `./scripts/utlity_model_calculate_loss.sh` to obtain the loss files.
+Utilize the scripts `./scripts/generate_token_mask.sh` to generate the token masking matrix.
 - Token-level selective training
+Utilize the scripts `./scripts/selective_finetuning.sh` to perform selective fine-tuning.
 
 ### Evaluation
+Our evaluation method follows [SEAL](https://github.com/hanshen95/SEAL)
 
 ## 🤝 Acknowledgments
 We would like to appreciate the following fantastic open-source works contributing to the implementation.
+- [SEAL](https://github.com/hanshen95/SEAL)
+- [TokenCleaning](https://github.com/UCSC-REAL/TokenCleaning)
 
 ## ✏️ Citation
 
