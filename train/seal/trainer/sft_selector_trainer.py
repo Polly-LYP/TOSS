@@ -30,7 +30,7 @@ class SFTSelectorTrainer(ABC):
         new_dataloader,
         p,
         p_opt: Optimizer,
-        p_scheduler, 
+        p_scheduler,
         scheduler,
         max_norm: float = 1,
         pretrain_mode: bool = False,
@@ -107,7 +107,7 @@ class SFTSelectorTrainer(ABC):
             if isinstance(self.train_dataloader.sampler, DistributedSampler):
                 self.train_dataloader.sampler.set_epoch(epoch)
                 self.new_dataloader.sampler.set_epoch(epoch)
-            if epoch>=1:
+            if epoch >= 1:
                 self.ul_weight -= self.ul_weight_decay
                 print("\n UL weight now", self.ul_weight, end="\n")
             step_bar = tqdm(
@@ -120,25 +120,19 @@ class SFTSelectorTrainer(ABC):
             self.model.train()
             self.p.train()
             loss_mean = 0
-            gpt_loss_mean=0
+            gpt_loss_mean = 0
             for (prompts_id_len, inputs, attention_masks, _), \
-                (ide, new_prompts_id_len, new_input, new_attention_masks, _) \
-                    in zip(self.train_dataloader,self.new_dataloader):
+                (sample_indices, new_prompts_id_len, new_input, new_attention_masks, _) \
+                    in zip(self.train_dataloader, self.new_dataloader):
                 inputs = inputs.squeeze(1).to(torch.cuda.current_device())
                 attention_mask = attention_masks.squeeze(1).to(torch.cuda.current_device())
                 output = self.model(inputs, attention_mask=attention_mask, return_output=True)
-                # todo: implement ref regularization
-                # if self.ref_model:
-                #     with torch.no_grad():
-                #         ref_output = self.ref_model(inputs, attention_mask=attention_mask, return_output=True) 
-       
-                
+
                 new_inputs = new_input.squeeze(1).to(torch.cuda.current_device())
                 new_attention_mask = new_attention_masks.squeeze(1).to(torch.cuda.current_device())
                 new_output = self.model(new_inputs, attention_mask=new_attention_mask, return_output=True)
                 with torch.no_grad():
-                    batch_weights = self.p()[ide]
-                
+                    batch_weights = self.p()[sample_indices]
 
                 # loss function
                 labels = torch.where(
@@ -164,21 +158,21 @@ class SFTSelectorTrainer(ABC):
 
                 gpt_loss = self.batch_loss_fn(output.logits, labels, sequence_reduce="mean").mean(0)
                 batch_gpt_loss = self.batch_loss_fn(new_output.logits, new_labels, sequence_reduce="mean")
-                
+
                 weighted_gpt_loss = (batch_weights * batch_gpt_loss).mean(0)
-                loss = self.ul_weight * gpt_loss + (1-self.ul_weight) * weighted_gpt_loss + aux_loss * self.args.aux_loss_coef
-                
-                self.strategy.backward(loss, self.model, self.optimizer) 
+                loss = self.ul_weight * gpt_loss + (1 - self.ul_weight) * weighted_gpt_loss + aux_loss * self.args.aux_loss_coef
+
+                self.strategy.backward(loss, self.model, self.optimizer)
                 self.strategy.optimizer_step(self.optimizer, self.model, self.scheduler)
-                
-                selector_loss = (self.p()[ide]*batch_gpt_loss.detach()).mean()
+
+                selector_loss = (self.p()[sample_indices] * batch_gpt_loss.detach()).mean()
                 self.strategy.backward(selector_loss, self.p, self.p_opt)
-                
+
                 self.strategy.optimizer_step(self.p_opt, self.p, self.p_scheduler)
 
                 gpt_loss_mean = gpt_loss_mean * 0.95 + 0.05 * gpt_loss.item()
                 loss_mean = loss_mean * 0.95 + 0.05 * loss.item()
-                logs_dict = {"upper_loss": gpt_loss.item(), "upper_loss_mean": gpt_loss_mean, "loss_mean":loss_mean}
+                logs_dict = {"upper_loss": gpt_loss.item(), "upper_loss_mean": gpt_loss_mean, "loss_mean": loss_mean}
                 if self.aux_loss:
                     logs_dict["aux_loss"] = aux_loss.item()
 
@@ -188,8 +182,7 @@ class SFTSelectorTrainer(ABC):
                 step_bar.update()
                 global_step += 1
             if self.strategy.is_rank_0():
-                p_name = "./ckpt/"+args.selector_name+"_"+ args.selector_activation \
-                    +"_ep"+str(epoch+1)+".pt"
+                p_name = f"./ckpt/{args.selector_name}_{args.selector_activation}_ep{epoch + 1}.pt"
                 torch.save(self.p.logits, p_name)
                 print(self.p.logits)
             epoch_bar.update()

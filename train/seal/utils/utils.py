@@ -99,27 +99,30 @@ def blending_datasets(
         if "train" in data:
             train_data_list.append(data["train"].select(range(min(max_count, len(data["train"])))))
         else:
-            train_data_list.append(data.select(range(min(max_count, len(data)))))  # train will contains eval? TODO
+            # Fallback for datasets without explicit "train" split.
+            train_data_list.append(data.select(range(min(max_count, len(data)))))
 
         if return_eval:
             if "test" in data:
-                eval_data = data["test"].select(range(min(int(max_count), len(data["test"])))) #bak
+                eval_data = data["test"].select(range(min(int(max_count), len(data["test"]))))
             elif "validation" in data:
-                eval_data = data["validation"].select(range(min(int(max_count), len(data["validation"]))))  #bak
-            elif "eval" in dataset:   #bak
-                eval_data = data["train"].select(range(min(int(max_count), len(data["train"])))) #bak
+                eval_data = data["validation"].select(range(min(int(max_count), len(data["validation"]))))
+            elif "eval" in dataset:
+                eval_data = data["train"].select(range(min(int(max_count), len(data["train"]))))
             elif "train" in data:
-                eval_data = data["train"].select(range(len(data["train"])-min(int(max_count * 0.1), int(len(data["train"]) * 0.01)),len(data["train"]))) #bak
-                ## for debug
-                #eval_data = data["train"].select(range(len(data["train"])-min(int(max_count * 0.1), int(len(data["train"]) * 0.1)),len(data["train"]))) #bak
+                eval_data = data["train"].select(
+                    range(
+                        len(data["train"]) - min(int(max_count * 0.1), int(len(data["train"]) * 0.01)),
+                        len(data["train"]),
+                    )
+                )
             else:
-                eval_data = data.select(range(len(data["train"])-min(int(max_count * 0.1), int(len(data) * 0.001)),len(data["train"]))) #bak
+                eval_data = data.select(
+                    range(len(data["train"]) - min(int(max_count * 0.1), int(len(data) * 0.001)), len(data["train"]))
+                )
             eval_data_list.append(eval_data)
 
     # merge datasets
-    if strategy.is_rank_0():
-        print(train_data_list)
-        print(eval_data_list) #bak
 
     train_dataset = interleave_datasets(
         train_data_list,
