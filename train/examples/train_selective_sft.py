@@ -4,8 +4,7 @@ import os
 from datetime import datetime
 
 from transformers.trainer import get_scheduler
-import torch #bak
-from datasets import concatenate_datasets #bak
+import torch
 
 from seal.datasets import SFTDataset
 from seal.models import Actor
@@ -17,15 +16,27 @@ import wandb
 def train(args):
     # configure strategy
     if args.normalize_l2:
-        args.learning_rate *= 1/(1+args.l2)
-        print("\n Weight decay is",args.l2," ,learning rate is normalized to", args.learning_rate,end="\n")
+        args.learning_rate *= 1 / (1 + args.l2)
+        print(
+            "\n Weight decay is",
+            args.l2,
+            ", learning rate is normalized to",
+            args.learning_rate,
+            end="\n",
+        )
     strategy = get_strategy(args)
     strategy.setup_distributed()
 
     if strategy.is_rank_0():
         if args.use_wandb:
-            wandb.login(key='d716cbeaca61bb1352381f47a45ee24a6942b39d')
-            wandb.init(project="Dual-goal-TokenCleaning", name=f'{args.exp_name}')
+            # Use `wandb login` or WANDB_API_KEY in environment before launching.
+            wandb.login()
+            wandb.init(
+                project=args.wandb_project,
+                entity=args.wandb_org,
+                group=args.wandb_group,
+                name=args.exp_name if args.exp_name else args.wandb_run_name,
+            )
             wandb.config.args = args
 
     # configure model
@@ -40,7 +51,7 @@ def train(args):
         target_modules=args.target_modules,
         lora_dropout=args.lora_dropout,
         ds_config=strategy.get_ds_train_config(is_actor=True),
-        gradient_checkpointing=args.gradient_checkpointing, #bak
+        gradient_checkpointing=args.gradient_checkpointing,
     )
 
     # configure tokenizer
@@ -52,34 +63,31 @@ def train(args):
     optim = strategy.create_optimizer(model, lr=args.learning_rate, betas=(0.9, 0.95), weight_decay=args.l2)
 
     # prepare for data and dataset
-    if args.eval_dataset != "default": #bak
+    if args.eval_dataset != "default":
         train_data = blending_datasets(
-        args.dataset, args.dataset_probs, strategy, args.seed,return_eval=False,
-            max_count=args.max_samples
-            )
-        eval_data =  blending_datasets(
-        args.eval_dataset, "1.", strategy, args.seed,return_eval=False,
-            max_count=args.max_samples
-            )
+            args.dataset, args.dataset_probs, strategy, args.seed, return_eval=False, max_count=args.max_samples
+        )
+        eval_data = blending_datasets(
+            args.eval_dataset, "1.", strategy, args.seed, return_eval=False, max_count=args.max_samples
+        )
     else:
         train_data, eval_data = blending_datasets(
-        args.dataset, args.dataset_probs, strategy, args.seed, max_count=args.max_samples
-    )
+            args.dataset, args.dataset_probs, strategy, args.seed, max_count=args.max_samples
+        )
     train_data = train_data.select(range(min(args.max_samples, len(train_data))))
     eval_data = eval_data.select(range(min(args.max_samples, len(eval_data))))
-    if args.selector_path and args.selector_path!='None': #bak
+    if args.selector_path and args.selector_path != "None":
         selector = torch.load(args.selector_path)
-        k = int(args.topp*selector.shape[0])
-        topk_logits, topk = torch.topk(selector,k,sorted=False)
+        k = int(args.topp * selector.shape[0])
+        _, topk = torch.topk(selector, k, sorted=False)
         topk = topk.tolist()
         train_data = train_data.select(topk)
-        print('\n Selected dataset',train_data)
-    safeinstr_data = None #bak
-    if args.safeinstr_dataset: #bak
+        print("\n Selected dataset", train_data)
+    safeinstr_data = None
+    if args.safeinstr_dataset:
         safeinstr_data = blending_datasets(
-        args.safeinstr_dataset, "1.", strategy, args.seed,return_eval=False,
-            max_count=args.max_samples
-            )
+            args.safeinstr_dataset, "1.", strategy, args.seed, return_eval=False, max_count=args.max_samples
+        )
     
     selected_labels_path = args.selected_label_path
     selected_labels = torch.load(selected_labels_path)
@@ -101,7 +109,7 @@ def train(args):
         strategy,
         pretrain_mode=args.pretrain_mode,
         input_template=args.input_template,
-        selected_labels=selected_labels[len(train_data)-len(eval_data):len(train_data)]
+        selected_labels=selected_labels[len(train_data) - len(eval_data) : len(train_data)],
     )
 
     train_dataloader = strategy.setup_dataloader(
@@ -160,10 +168,10 @@ def train(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--eval_dataset", type=str, default="default") #bak
-    parser.add_argument("--eval_on_train", action="store_true", default=False) #bak
-    parser.add_argument("--normalize_l2", action="store_true", default=False) #bak
-    parser.add_argument("--safeinstr_dataset", type=str, default=None) #bak
+    parser.add_argument("--eval_dataset", type=str, default="default")
+    parser.add_argument("--eval_on_train", action="store_true", default=False)
+    parser.add_argument("--normalize_l2", action="store_true", default=False)
+    parser.add_argument("--safeinstr_dataset", type=str, default=None)
     parser.add_argument("--pretrain", type=str, default="bigscience/bloomz-1b7")
     parser.add_argument("--dataset", type=str, default="Dahoas/full-hh-rlhf")
     parser.add_argument("--dataset_probs", type=str, default="1.0", help="sampling probs for datasets")
@@ -206,7 +214,7 @@ if __name__ == "__main__":
     parser.add_argument("--gradient_checkpointing_use_reentrant", action="store_true")
     parser.add_argument("--disable_fast_tokenizer", action="store_true", default=False)
     
-    #data selector #bak
+    # data selector
     parser.add_argument("--selector_path", type=str, default=None)
     parser.add_argument("--topp", type=float, default=1.)
 
@@ -214,8 +222,8 @@ if __name__ == "__main__":
     parser.add_argument("--input_key", type=str, default=None)
     parser.add_argument("--output_key", type=str, default=None)
     
-    # wandb pamameters
-    parser.add_argument("--use_wandb", action='store_true', help='Use wandb for logging')
+    # wandb parameters
+    parser.add_argument("--use_wandb", action="store_true", help="Use wandb for logging")
     parser.add_argument("--exp_name", type=str, default=None)
     parser.add_argument("--wandb_org", type=str, default=None)
     parser.add_argument("--wandb_group", type=str, default=None)
@@ -225,7 +233,7 @@ if __name__ == "__main__":
         type=str,
         default="sft_%s" % datetime.now().strftime("%m%dT%H:%M"),
     )
-    ## path for selected_label
+    # path for selected_label
     parser.add_argument("--selected_label_path", type=str, default="path for selected_label")
 
     args = parser.parse_args()
@@ -233,5 +241,3 @@ if __name__ == "__main__":
 
 
 
-
-# --seed 42 --max_len 2048 --dataset ./datasets/RedOrca/train.jsonl --selector_path ./ckpt/seal_selector_llama3.pt --topp 0.8 --dataset_probs 1. --train_batch_size 64 --micro_train_batch_size 1 --max_samples 112000 --pretrain meta-llama/Meta-Llama-3-8B-Instruct --save_path ./ckpt/llama3-llama380-ep2-ro --save_steps -1 --logging_steps 1 --eval_steps -1 
