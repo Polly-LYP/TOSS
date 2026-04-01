@@ -2,7 +2,7 @@
 
 # [ICLR'26] Token-level Data Selection for Safe LLM Fine-tuning
 
-Official PyTorch implementation of our **ICLR 2026** paper:
+Official PyTorch implementation of our paper:
 
 **Token-level Data Selection for Safe LLM Fine-tuning**
 
@@ -47,7 +47,6 @@ pip install -e ./train/OpenRLHFBase
 pip install -e ./train
 ```
 
-If README figures are not displayed, place image files under `assets/` (e.g., `assets/pipeline.png`).
 
 ### Train
 - Train reference model
